@@ -1,0 +1,46 @@
+﻿@page "/"
+@inject IRepositorio repositorio
+@inject IMostrarMensajes mostrarMensajes
+
+
+@*<p style="color: @appState.Color; font-size: @appState.Size">Hola, @UtilidadesString.Enmayuscular(nombre)</p>
+
+<div style="display:flex;">
+    <div style="width: 150px;">
+        <select @bind="@appState.Color" class="form-control" style="margin-top: 15px">
+            <option value="green">Verde</option>
+            <option value="red">Rojo</option>
+            <option value="blue">Azul</option>
+        </select>
+    </div>
+    <div style="width: 150px;">
+        <select @bind="@appState.Size" class="form-control" style="margin-top: 15px">
+            <option value="12px">12px</option>
+            <option value="20px">20px</option>
+            <option value="30px">30px</option>
+        </select>
+    </div>
+</div>*@
+
+<div>
+    <h3>Alumnos</h3>
+    <ListadoAlumnos alumnos="alumnos" />
+</div>
+<button @onclick="AgregarAlumno">Agregar alumno</button>
+
+@code{
+    //[CascadingParameter] protected AppState appState { get; set; }
+
+    //string nombre = "Noemí";
+    public List<Alumno> alumnos;
+
+    protected override void OnInitialized()
+    {
+        alumnos = repositorio.ObtenerAlumnos();
+
+    }
+    void AgregarAlumno()
+    {
+        alumnos.Add(new Alumno() { Id = 4, Nombre = "Noe", Examenes = { } });
+    }
+}

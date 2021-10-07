@@ -1,0 +1,42 @@
+﻿
+<input type="checkbox" @bind="MostrarBotones" />
+<ListadoGenerico Listado="alumnos">
+    <HayRegistros Context="alumno">
+        <AlumnoIndividual alumno="alumno"
+                          EliminarAlumno="EliminarAlumno"
+                          MostrarBotones="MostrarBotones" />
+    </HayRegistros>
+</ListadoGenerico>
+
+<Confirmacion @ref="confirmacion" onConfirm="OnConfirmEliminar" onCancel="OnCancelEliminar">
+    <div>¿Desea borrar el alumno?</div>
+</Confirmacion>
+
+@code {
+    Confirmacion confirmacion;
+    [Parameter] public List<Alumno> alumnos { get; set; }
+    Alumno alumnoABorrar;
+
+    bool MostrarBotones = true;
+
+    async Task EliminarAlumno(Alumno alumno)
+    {
+        confirmacion.Mostrar();
+        alumnoABorrar = alumno;
+        //Console.WriteLine($"Eliminando alumno {alumno.Id}");
+        //await mensaje.MostrarMensajeExitoso("Alumno eliminado");
+    }
+
+    void OnConfirmEliminar()
+    {
+        alumnos.Remove(alumnoABorrar);
+        confirmacion.Ocultar();
+        alumnoABorrar = null;
+    }
+
+    void OnCancelEliminar()
+    {
+        confirmacion.Ocultar();
+        alumnoABorrar = null;
+    }
+}
