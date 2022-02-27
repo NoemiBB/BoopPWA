@@ -1,0 +1,21 @@
+﻿<EditForm Model="asignatura" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <div class="form-group">
+        <label>Nombre:</label>
+        <div>
+            <InputText class="form-control" @bind-Value="@asignatura.Nombre" />
+            <ValidationMessage For="@(() => asignatura.Nombre)" />
+        </div>
+    </div>
+
+    <button class="btn btn-success" type="submit">Guardar Cambios</button>
+    <button class="btn btn-danger" type="button" @onclick="Cancelar">Cancelar</button>
+</EditForm>
+
+@code {
+    [Parameter] public Asignatura asignatura { get; set; }
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    async Task Cancelar() => await OnCancel.InvokeAsync(null);
+}

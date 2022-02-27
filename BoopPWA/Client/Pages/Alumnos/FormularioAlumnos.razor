@@ -1,0 +1,47 @@
+﻿<EditForm Model="alumno" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+    <div class="form-group">
+        <label>Nombre:</label>
+        <div>
+            <InputText class="form-control" @bind-Value="@alumno.Nombre" />
+            <ValidationMessage For="@(() => alumno.Nombre)" />
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Fecha Nacimiento:</label>
+        <div>
+            <InputDate class="form-control" @bind-Value="@alumno.FechaNacimiento" />
+            <ValidationMessage For="@(() => alumno.FechaNacimiento)" />
+        </div>
+    </div>
+    <div class="form-group">
+        <InputImg Label="Foto" ImagenSeleccionada="ImagenSeleccionada" ImagenURL="@imagenURL" />
+    </div>
+    <button class="btn btn-success" type="submit">Guardar Cambios</button>
+    <button class="btn btn-danger" type="button" @onclick="Cancelar">Cancelar</button>
+</EditForm>
+
+@code {
+    [Parameter] public Alumno alumno { get; set; }
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private string imagenURL;
+
+    protected override void OnInitialized()
+    {
+        if (!string.IsNullOrWhiteSpace(alumno.Foto))
+        {
+            imagenURL = alumno.Foto;
+            //Console.WriteLine(imagenURL);
+            alumno.Foto = null;
+        }
+    }
+
+    private void ImagenSeleccionada(string imagenBase64)
+    {
+        alumno.Foto = imagenBase64;
+        imagenURL = null;
+    }
+    async Task Cancelar() => await OnCancel.InvokeAsync(null);
+}

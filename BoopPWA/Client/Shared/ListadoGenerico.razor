@@ -4,7 +4,7 @@
 {
     @if (Cargando == null)
     {
-        <textarea>Cargando...</textarea>
+        <text>Cargando...</text>
     }
     else
     {
@@ -16,7 +16,7 @@ else if (Listado.Count == 0)
 {
     @if (NoHayRegistros == null)
     {
-        <textarea>No hay registros</textarea>
+        <text>No hay registros</text>
     }
     else
     {
@@ -25,9 +25,16 @@ else if (Listado.Count == 0)
 }
 else
 {
-    @foreach (var elemento in Listado)
+    if (HayRegistros != null)
     {
-        @HayRegistros(elemento)
+        @foreach (var elemento in Listado)
+        {
+            @HayRegistros(elemento)
+        }
+    }
+    else
+    {
+        @HayRegistrosCompleto
     }
 }
 
@@ -36,5 +43,6 @@ else
     [Parameter] public RenderFragment Cargando { get; set; }
     [Parameter] public RenderFragment NoHayRegistros { get; set; }
     [Parameter] public RenderFragment<Titem> HayRegistros { get; set; }
+    [Parameter] public RenderFragment HayRegistrosCompleto { get; set; }
     [Parameter] public List<Titem> Listado { get; set; }
 }

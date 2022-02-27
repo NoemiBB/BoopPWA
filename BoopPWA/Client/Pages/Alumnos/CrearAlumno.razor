@@ -1,7 +1,26 @@
 ﻿@page "/alumnos/crear"
+@inject IRepositorio repositorio
+@inject NavigationManager navigationManager
+@inject IMostrarMensajes mostrarMensajes
 
-<h3>CrearAlumno</h3>
+<h3>Crear Alumno</h3>
+<FormularioAlumnos alumno="alumno" OnValidSubmit="Crear" OnCancel="Salir"/>
 
 @code {
+    private Alumno alumno = new Alumno();
 
+    private async Task Crear()
+    {
+        var httpResponse = await repositorio.Post("api/alumnos", alumno);
+        if (httpResponse.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(await httpResponse.GetBody());
+        }
+        else
+        {
+            Salir();
+            //navigationManager.NavigateTo("/alumnos");
+        }
+    }
+    private void Salir() => navigationManager.NavigateTo("/alumnos");
 }

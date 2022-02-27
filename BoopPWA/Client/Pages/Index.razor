@@ -1,46 +1,47 @@
 ﻿@page "/"
 @inject IRepositorio repositorio
 @inject IMostrarMensajes mostrarMensajes
+@inject NavigationManager navigator
 
+<SurveyPrompt Title="App de estudios"></SurveyPrompt>
 
-@*<p style="color: @appState.Color; font-size: @appState.Size">Hola, @UtilidadesString.Enmayuscular(nombre)</p>
-
-<div style="display:flex;">
-    <div style="width: 150px;">
-        <select @bind="@appState.Color" class="form-control" style="margin-top: 15px">
-            <option value="green">Verde</option>
-            <option value="red">Rojo</option>
-            <option value="blue">Azul</option>
-        </select>
+<div id="seleccion" class="seleccion animated fadeIn fast" align="center">
+    <div>
+        <a href="alumnos">
+            <img src="images/Man-256.png" alt="alumnos" class="seleccion-opcion">
+        </a>
     </div>
-    <div style="width: 150px;">
-        <select @bind="@appState.Size" class="form-control" style="margin-top: 15px">
-            <option value="12px">12px</option>
-            <option value="20px">20px</option>
-            <option value="30px">30px</option>
-        </select>
-    </div>
-</div>*@
 
-<div>
-    <h3>Alumnos</h3>
-    <ListadoAlumnos alumnos="alumnos" />
+    <div>
+        <a href="asignaturas">
+            <img src="images/Book Library-256.png" alt="asignaturas" class="seleccion-opcion">
+        </a>
+    </div>
+
+    <div>
+        <a href="examenes">
+        <img src="images/Education-256.png" alt="exámenes" class="seleccion-opcion">
+
+        </a>
+    </div>
 </div>
-<button @onclick="AgregarAlumno">Agregar alumno</button>
 
 @code{
     //[CascadingParameter] protected AppState appState { get; set; }
 
     //string nombre = "Noemí";
+    string texto = "Hola Noe";
     public List<Alumno> alumnos;
-
-    protected override void OnInitialized()
+    
+    protected override async Task OnInitializedAsync()
     {
-        alumnos = repositorio.ObtenerAlumnos();
+        var httpResponse = await repositorio.Get<List<Alumno>>("api/alumnos");
+        alumnos = httpResponse.Response;
 
     }
     void AgregarAlumno()
     {
-        alumnos.Add(new Alumno() { Id = 4, Nombre = "Noe", Examenes = { } });
+        //alumnos.Add(new Alumno() { Id = 4, Nombre = "Noe", Examenes = { } });
+        alumnos.Add(new Alumno() { Id = 4, Nombre = "Noe"});
     }
 }

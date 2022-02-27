@@ -1,5 +1,6 @@
 using BoopPWA.Client.Helpers;
 using BoopPWA.Client.Repositorios;
+using BoopPWA.Client.Services;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +31,7 @@ namespace BoopPWA.Client
         {
             services.AddScoped<IRepositorio, Repositorio>();
             services.AddScoped<IMostrarMensajes, MostrarMensajes>();
+            services.AddScoped<ExamenServicios>();
         }
     }
 }

@@ -1,0 +1,92 @@
+﻿@page "/examenes"
+@inject IRepositorio repositorio
+@inject IMostrarMensajes mostrarMensajes
+@inject NavigationManager navigator
+@inject ExamenServicios servicio
+
+<h3>Consultar Examenes</h3>
+<RadzenButton Icon="add_circle_outline" Style="margin-bottom: 10px" Text="Añadir examen" ButtonStyle="ButtonStyle.Info" Click="@Insertar"></RadzenButton>
+<RadzenButton Icon="grid_on" Style="margin-bottom: 10px" Text="Exportar a XLS" ButtonStyle="ButtonStyle.Warning" Click="@(args => Export("excel"))" Class="mb-4 mr-2"></RadzenButton>
+<RadzenDataGrid @ref="grid" AllowFiltering = "true" FilterMode="FilterMode.Advanced" PageSize="8" AllowPaging="true" AllowSorting="true"
+                Data="@examenes" TItem="Examen">
+                <Columns>
+                    <RadzenDataGridColumn TItem="Examen" Property="Alumno.Nombre" Filterable="true" Title="Alumno" Width="100px">
+                        <Template Context="examen">
+                            @switch (examen.AlumnoId)
+                            {
+                                @case 5:
+                                    <span style="background-color:cyan">@examen.Alumno.Nombre</span>
+                                    break;
+                                @case 3:
+                                    <span style="background-color:pink">@examen.Alumno.Nombre</span>
+                                    break;
+                                @case 4:
+                                    <span style="background-color:greenyellow">@examen.Alumno.Nombre</span>
+                                    break;
+
+                            }
+                        </Template>
+                    </RadzenDataGridColumn>>
+                    <RadzenDataGridColumn TItem="Examen" Property="Fecha" Filterable="true" Title="Fecha" FormatString="{0:d}" Width="120px"></RadzenDataGridColumn>>
+                    <RadzenDataGridColumn TItem="Examen" Property="Asignatura.Nombre" Filterable="true" Title="Asignatura"></RadzenDataGridColumn>>
+                    <RadzenDataGridColumn TItem="Examen" Property="Tema" Filterable="true" Title="Tema" Width="150px"></RadzenDataGridColumn>>
+                    <RadzenDataGridColumn TItem="Examen" Property="Nota" Filterable="true" Title="Nota" Width="100px"></RadzenDataGridColumn>>
+                    <RadzenDataGridColumn TItem="Examen" Property="Observaciones" Filterable="true" Title="Observaciones"></RadzenDataGridColumn>>
+                    <RadzenDataGridColumn TItem="Examen" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="60px">
+                        <Template Context="examen">
+                            <RadzenButton Icon="feedback" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small" Class="m-1" Click="@(args => mostrarMensajes.MostrarMensajeExitoso(examen.Observaciones))"></RadzenButton>
+                        </Template>
+                    </RadzenDataGridColumn>>
+                    <RadzenDataGridColumn TItem="Examen" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="60px">
+                        <Template Context="examen">
+                            <RadzenButton Icon="edit" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small" Class="m-1" Click="@(args => Editar(examen))"></RadzenButton>
+                        </Template>
+                    </RadzenDataGridColumn>>
+                    <RadzenDataGridColumn TItem="Examen" Filterable="false" Sortable="false" TextAlign="TextAlign.Center" Width="60px">
+                        <Template Context="examen">
+                            <RadzenButton Icon="delete" ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small" Class="m-1" Click="@(args => Borrar(examen))"></RadzenButton>
+                        </Template>
+                    </RadzenDataGridColumn>>
+                </Columns>
+</RadzenDataGrid>
+
+@code {
+    private IEnumerable<Examen> examenes;
+    RadzenDataGrid<Examen> grid;
+    //string color = "background-color:red";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Cargar();
+    }
+
+    private async Task Cargar()
+    {
+        var examenesLista = await repositorio.Get<List<Examen>>("api/examenes?pagina=0");
+        examenes = examenesLista.Response.AsEnumerable();        
+    }
+    void Insertar() => navigator.NavigateTo("/examenes/crear");
+    void Editar(Examen examen) => navigator.NavigateTo($"/examenes/editar/{examen.Id}");
+
+    private async Task Borrar(Examen examen)
+    {
+        var responseHttp = await repositorio.Delete($"api/examenes/{examen.Id}");
+        if (responseHttp.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(await responseHttp.GetBody());
+        }
+        else
+        {
+            await mostrarMensajes.MostrarMensajeExitoso("Examen borrado");
+            await Cargar();
+        }
+    }
+    public void Export(string type)
+    {
+        servicio.Export("Exámenes", type, new Query()
+            {
+                OrderBy = grid.Query.OrderBy,
+                Filter = grid.Query.Filter
+            });
+    }
+}

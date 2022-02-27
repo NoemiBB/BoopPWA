@@ -1,7 +1,62 @@
 ﻿@page "/alumnos"
+@inject IRepositorio repositorio
+@inject IMostrarMensajes mostrarMensajes
 
-<h3>IndiceAlumnos</h3>
+<center>
+
+<h3>Indice Alumnos</h3>
+<div class="form-group">
+    <a class="btn btn-info" href="alumnos/crear">Agregar alumno</a>
+</div>
+
+<ListadoGenerico Listado="alumnos">
+    <HayRegistrosCompleto>
+        <table class="table table-striped tabla">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in alumnos)
+                {
+                    <tr>
+                        <td>@item.Nombre</td>
+                        <td width="20%">
+                            <a href="/alumnos/editar/@item.Id" class="btn btn-success">Editar</a>
+                            <button @onclick="@(() => BorrarAlumno(item))" class="btn btn-danger">Borrar</button>
+                        </td>
+                    </tr>                }
+            </tbody>
+        </table>
+    </HayRegistrosCompleto>
+</ListadoGenerico>
+</center>
 
 @code {
+    public List<Alumno> alumnos { get; set; }
 
+    protected async override Task OnInitializedAsync()
+    {
+        await Cargar();
+    }
+
+    private async Task Cargar()
+    {
+        var responseHttp = await repositorio.Get<List<Alumno>>("api/alumnos");
+        alumnos = responseHttp.Response;
+    }
+    private async Task BorrarAlumno(Alumno alumno)
+    {
+        var responseHttp = await repositorio.Delete($"api/alumnos/{alumno.Id}");
+        if (responseHttp.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(await responseHttp.GetBody());
+        }
+        else
+        {
+            await Cargar();
+        }
+    }
 }

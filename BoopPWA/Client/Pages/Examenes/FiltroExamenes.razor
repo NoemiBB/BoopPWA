@@ -1,0 +1,163 @@
+﻿@page "/examenesFiltro"
+@inject IRepositorio repositorio
+
+<h3>Exámenes</h3>
+
+<div class="form-inline">
+    <div class="form-group mx-sm-3 mb-2">
+        <select class="form-control" @bind="alumnoSeleccionado">
+            <option value="0">--Seleccionar alumno--</option>
+            @foreach (var item in alumnos)
+            {
+                <option value="@item.Id">@item.Nombre</option>
+            }
+        </select>
+    </div>
+    <div class="form-group mx-sm-3 mb-2">
+        <select class="form-control" @bind="asignaturaSeleccionada">
+            <option value="0">--Seleccionar asignatura--</option>
+            @foreach (var item in asignaturas)
+            {
+                <option value="@item.Id">@item.Nombre</option>
+            }
+        </select>
+    </div>
+    <div class="form-group mb-2">
+        <label for="fecha" class="sr-only">Fecha</label>
+        <input @bind-value="fecha" @bind-value:event="oninput"
+               @onkeypress="@((KeyboardEventArgs e) => FechaKeyPress(e))"
+               type="date" class="form-control" id="fecha" placeholder="Fecha desde" />
+    </div>
+    @*<div class="form-group mx-sm-3 mb-2">
+        <input type="checkbox" class="form-check-input" id="notas" @bind="conNota" />
+        <label class="form-check-label" for="notas">
+        Con nota
+        </label>
+        </div>*@
+
+    <button type="button" class="btn btn-primary mb-2 mx-sm-3" @onclick="CargarNuevosExamenes">Filtrar</button>
+    <button type="button" class="btn btn-danger mb-2" @onclick="LimpiarOnClick">Limpiar</button>
+</div>
+
+<IndiceExamenes examenes="examenes" />
+<Paginar PaginaActual="paginaActual" PaginaSeleccionada="paginaSeleccionada" PaginasTotales="paginasTotales" />
+
+@code {
+    string alumnoSeleccionado = null;
+    string asignaturaSeleccionada = null;
+    DateTime fecha = new DateTime(DateTime.Now.Year, 1, 1);
+    //private bool conNota = false;
+
+    private List<Examen> examenes = new List<Examen>();
+    private List<Alumno> alumnos = new List<Alumno>();
+    private List<Asignatura> asignaturas = new List<Asignatura>();
+
+    private int paginaActual = 1;
+    private int paginasTotales;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await obtenerAlumnos();
+        await obtenerAsignaturas();
+
+    }
+
+    private async Task obtenerAlumnos()
+    {
+        var httpResponse = await repositorio.Get<List<Alumno>>("api/alumnos");
+        alumnos = httpResponse.Response;
+
+    }
+    private async Task obtenerAsignaturas()
+    {
+        var httpResponse = await repositorio.Get<List<Asignatura>>("api/asignaturas?pagina=0");
+        asignaturas = httpResponse.Response;
+
+    }
+
+    private async Task FechaKeyPress(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await CargarNuevosExamenes();
+        }
+    }
+
+    private async Task paginaSeleccionada(int pagina)
+    {
+        paginaActual = pagina;
+        await Cargar(pagina);
+    }
+
+    private async Task Cargar(int pagina = 1)
+    {
+        Filtros filtros = new Filtros
+            {
+                AlumnoId = alumnoSeleccionado,
+                AsignaturaId = asignaturaSeleccionada,
+                Fecha = fecha
+            };
+        Paginacion paginacion = new Paginacion
+            {
+                Pagina = 1,
+                CantidadRegistros = 10
+            };
+        //Console.WriteLine($"filtros: {filtros.AlumnoId} - {filtros.AsignaturaId} - {filtros.Fecha}");
+
+        //var responseHttp = await repositorio.Get<List<Examen>>($"api/examenes?pagina={pagina}&filtros={filtros}");
+        var responseHttp = await repositorio.Get<List<Examen>>($"api/examenes?AlumnoId={alumnoSeleccionado}");
+        
+        examenes = responseHttp.Response;
+
+        // Paginación        
+        //var conteo = responseHttp.HttpResponseMessage.Headers.GetValues("conteo").FirstOrDefault();
+        //paginasTotales = int.Parse(responseHttp.HttpResponseMessage.Headers.GetValues("totalPaginas").FirstOrDefault());
+        
+
+        //var responseHttp = await repositorio.Get<List<Examen>>($"api/examenes?pagina={pagina}");                
+        /*var responseHttp = await repositorio.Get<List<Examen>>("api/examenes?pagina=0");
+        if (!responseHttp.Error)
+        {
+            examenes = responseHttp.Response;
+
+            // Aplicamos los filtros
+            int alumnoId = 0;
+            int asignaturaId = 0;
+
+            if (alumnoSeleccionado != null)
+            {
+                alumnoId = Convert.ToInt32(alumnoSeleccionado);
+            }
+            if (asignaturaSeleccionada != null)
+            {
+                asignaturaId = Convert.ToInt32(asignaturaSeleccionada);
+            }
+            if (alumnoId > 0)
+            {
+                examenes = examenes.Where(x => x.AlumnoId == alumnoId).ToList();
+            }
+            if (asignaturaId > 0)
+            {
+                examenes = examenes.Where(x => x.AsignaturaId == asignaturaId).ToList();
+            }
+
+            examenes = examenes.Where(x => x.Fecha >= fecha).ToList();
+            
+            // Paginación        
+            var conteo = responseHttp.HttpResponseMessage.Headers.GetValues("conteo").FirstOrDefault();
+            paginasTotales = int.Parse(responseHttp.HttpResponseMessage.Headers.GetValues("totalPaginas").FirstOrDefault());
+        }*/
+
+    }
+    private async Task CargarNuevosExamenes()
+    {
+        await Cargar(1);
+    }
+    private void LimpiarOnClick()
+    {
+        alumnoSeleccionado = null;
+        asignaturaSeleccionada = null;
+        fecha = new DateTime(DateTime.Now.Year, 1, 1);
+        //conNota = false;
+    }
+    }

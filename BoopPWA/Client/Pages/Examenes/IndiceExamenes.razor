@@ -1,7 +1,90 @@
-﻿@page "/examenes"
+﻿@*@page "/examenes"*@
+@inject IRepositorio repositorio
+@inject IMostrarMensajes mostrarMensajes
 
-<h3>IndiceExamenes</h3>
+<div class="form-group">
+    <a class="btn btn-info" href="examenes/crear">Crear examen</a>
+</div>
+
+<ListadoGenerico Listado="examenes">
+    <HayRegistrosCompleto>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Alumno</th>
+                    <th>Asignatura</th>
+                    <th>Tema</th>
+                    <th>Nota</th>
+                    <th>Observaciones</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in examenes)
+                {
+                    <tr>
+                        <td>@item.Fecha.ToShortDateString()</td>
+                        @*<td>@alumnos.Where(x => x.Id == @item.AlumnoId)</td>*@
+                        @*<td>@cargarNombre(@item.AsignaturaId)</td>*@
+                        <td>@item.Alumno.Nombre</td>
+                        <td>@item.Asignatura.Nombre</td>
+                        <td>@item.Tema</td>
+                        <td>@item.Nota</td>
+                        <td>@item.Observaciones</td>
+                        <td>
+                            <a href="/examenes/editar/@item.Id" class="btn btn-success">Editar</a>
+                            <button @onclick="@(() => BorrarExamen(item))" class="btn btn-danger">Borrar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </HayRegistrosCompleto>
+</ListadoGenerico>
 
 @code {
+    [Parameter] public List<Examen> examenes { get; set; }
+    List<Alumno> alumnos;
+    List<Asignatura> asignaturas;
 
+    protected override async Task OnInitializedAsync()
+    {        
+        var responseHttp = await repositorio.Get<List<Alumno>>("api/alumnos");
+        alumnos = responseHttp.Response;
+        //var responseHttpAsig = await repositorio.Get<List<Asignatura>>("api/asignaturas?pagina=1");
+        var responseHttpAsig = await repositorio.Get<List<Asignatura>>("api/asignaturas");
+        asignaturas = responseHttpAsig.Response;
+        //if (!responseHttpAsig.Error)
+        //{
+        //    asignaturas = responseHttpAsig.Response;
+        //}
+        //asignaturas = responseHttpAsig.ToList();
+    }
+
+    private async Task BorrarExamen(Examen examen)
+    {
+        var responseHttp = await repositorio.Delete($"api/examenes/{examen.Id}");
+        if (responseHttp.Error)
+        {
+            await mostrarMensajes.MostrarMensajeError(await responseHttp.GetBody());
+        }
+        //else
+        //{
+        //    await Cargar();
+        //}
+    }
+    string cargarNombre(int id)
+    {
+        Asignatura asignatura;
+        asignatura = asignaturas.FirstOrDefault(x => x.Id == id);
+        return asignatura.Nombre;
+    }
+
+    //private async Task<string> NombreAlumno(int id)
+    //{
+    //    var responseHttp = await repositorio.Get<Alumno>($"api/alumnos/{id}");
+    //    return responseHttp.Response.Nombre;
+    //    //nombreAlu = alumno.Nombre;
+    //}
 }
